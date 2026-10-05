@@ -5,6 +5,22 @@ This project is a website that the user can use to create shopping lists. The us
 
 # directory
 - keep this section updated
+- `index.html` — app shell: menu view, list view, dialogs (delete all, edit item, confirm)
+- `css/styles.css` — all styling; light/dark theme tokens via `[data-theme]` on `<html>`
+- `js/backend/` — data logic only, never touches the DOM
+  - `storage.js` — load/save `{lists, settings}` under localStorage key `shopperSpree.data`
+  - `lists.js` — list/item CRUD, favorites, sorting, duplicate-item merge, startup view decision, cross-tab `reload()`
+  - `wordbank.js` — autocomplete wordbank under key `shopperSpree.wordbank` (search, remember, reset)
+  - `seed.js` — 100 seeded grocery items
+  - `palette.js` — predefined list colors
+- `js/frontend/` — UI only, talks to backend through its exported functions
+  - `app.js` — entry point: boot, theme, view routing, cross-tab `storage` listener
+  - `menu.js` — lists menu (create, sort, category filter, favorite, delete, delete all)
+  - `listView.js` — single list (color picker, rename, items, autocomplete, edit dialog)
+  - `dom.js` — small DOM helpers and icons
+- `vercel.json` — static hosting config
+- `.claude/plans/build-plan.md` — build plan and revision history
+- Local dev: ES modules need an http server (`python3 -m http.server`, then open http://localhost:8000); opening `index.html` via file:// won't work
 
 # architecture
 
