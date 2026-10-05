@@ -1,5 +1,5 @@
 // Case-insensitive wordbank used for item autocomplete. No DOM access.
-// Shape: { items: [{ name, units, category }] }
+// Shape: { items: [{ name, units, category, emoji }] }
 
 import { SEED_ITEMS } from "./seed.js";
 
@@ -32,11 +32,26 @@ export function loadWordbank() {
   }
   if (parsed && Array.isArray(parsed.items)) {
     cache = parsed;
+    if (backfillEmojis(cache)) saveWordbank();
   } else {
     cache = seeded();
     saveWordbank();
   }
   return cache;
+}
+
+// Give older saved entries their seed emoji. Never overwrites an existing one.
+function backfillEmojis(bank) {
+  const seedEmoji = new Map(SEED_ITEMS.filter((i) => i.emoji).map((i) => [norm(i.name), i.emoji]));
+  let changed = false;
+  for (const entry of bank.items) {
+    const emoji = !entry.emoji && seedEmoji.get(norm(entry.name));
+    if (emoji) {
+      entry.emoji = emoji;
+      changed = true;
+    }
+  }
+  return changed;
 }
 
 // Drop the cache so the next read comes from storage (cross-tab sync).
@@ -75,8 +90,8 @@ export function searchWords(query, limit = 8) {
   return [...starts.sort(byName), ...contains.sort(byName)].slice(0, limit);
 }
 
-// Add a new word, or update units/category to the most recently used values.
-export function rememberWord({ name, units, category }) {
+// Add a new word, or update units/category/emoji to the most recently used values.
+export function rememberWord({ name, units, category, emoji }) {
   const trimmed = String(name || "").trim();
   if (!trimmed) return;
   const bank = loadWordbank();
@@ -84,8 +99,9 @@ export function rememberWord({ name, units, category }) {
   if (existing) {
     if (units) existing.units = units;
     if (category) existing.category = category;
+    if (emoji) existing.emoji = emoji;
   } else {
-    bank.items.push({ name: trimmed, units: units || "", category: category || "" });
+    bank.items.push({ name: trimmed, units: units || "", category: category || "", emoji: emoji || "" });
   }
   saveWordbank();
 }

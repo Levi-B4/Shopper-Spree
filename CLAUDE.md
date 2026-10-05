@@ -11,12 +11,14 @@ This project is a website that the user can use to create shopping lists. The us
   - `storage.js` — load/save `{lists, settings}` under localStorage key `shopperSpree.data`
   - `lists.js` — list/item CRUD, favorites, sorting, duplicate-item merge, startup view decision, cross-tab `reload()`
   - `wordbank.js` — autocomplete wordbank under key `shopperSpree.wordbank` (search, remember, reset)
-  - `seed.js` — 100 seeded grocery items
+  - `seed.js` — 100 seeded grocery items (62 with default emojis)
   - `palette.js` — predefined list colors
+  - `emojis.js` — predefined emoji set for lists and items
 - `js/frontend/` — UI only, talks to backend through its exported functions
   - `app.js` — entry point: boot, theme, view routing, cross-tab `storage` listener
   - `menu.js` — lists menu (create, sort, category filter, favorite, delete, delete all)
   - `listView.js` — single list (color picker, rename, items, autocomplete, edit dialog)
+  - `emojiPicker.js` — shared emoji popover used by the list header, add-item form and item rows
   - `dom.js` — small DOM helpers and icons
 - `vercel.json` — static hosting config
 - `.claude/plans/build-plan.md` — build plan and revision history
@@ -27,6 +29,7 @@ This project is a website that the user can use to create shopping lists. The us
 ## Front End
 ### lists
 - each list has a color, randomized but configurable by clicking a circle next to the list name
+- lists and items can each have an optional emoji, picked from a predefined set by clicking the emoji button (like the color selector); list emojis show in the menu; the New list form also has an emoji button
 - autocomplete as the user is typing in the item name
 - if the item name is auto completed, autocomplete the category and units of measurement too
 - The list will be split in two sections, items that have been bought and items that are not bought
@@ -48,8 +51,8 @@ This project is a website that the user can use to create shopping lists. The us
 - local storage key reference: @.claude/references/localStorageKey.md
 - items should have a name, quantity, units of measurement, category, and a checkbox
 - a case insensitive wordbank of items that the user could use for autocomplete, that is added to as the user adds items to the list not already in the wordbank(template: @.claude/references/wordBankTemplate.md)
-- wordbank item category and units match the most recently used
-- wordbank should be seeded with 100 common grocery items
+- wordbank item category, units and emoji match the most recently used
+- wordbank should be seeded with 100 common grocery items, with default emojis where one fits (older saved wordbanks are backfilled on load; user-chosen emojis are never overwritten)
 - list colors have a predefined palatte
 
 # Coding Conventions

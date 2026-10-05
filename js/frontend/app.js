@@ -6,6 +6,7 @@ import { DATA_KEY } from "../backend/storage.js";
 import { $ } from "./dom.js";
 import { initMenu, renderMenu } from "./menu.js";
 import { initListView, renderListView, currentListId } from "./listView.js";
+import { initEmojiPicker, closeEmojiPicker } from "./emojiPicker.js";
 
 const NOTICES = {
   "no-lists": "You don't have any lists yet. Create one below to get started.",
@@ -20,6 +21,7 @@ function applyTheme(theme) {
 }
 
 export function showMenu(reason = null, listId = null) {
+  closeEmojiPicker();
   $("list-view").hidden = true;
   $("menu-view").hidden = false;
   $("back-btn").hidden = true;
@@ -40,6 +42,7 @@ export function showMenu(reason = null, listId = null) {
 
 export function showList(id) {
   if (!backend.openList(id)) return showMenu();
+  closeEmojiPicker();
   $("menu-view").hidden = true;
   $("list-view").hidden = false;
   $("back-btn").hidden = false;
@@ -60,6 +63,7 @@ function boot() {
 
   initMenu({ onOpenList: showList, onAfterDeleteAll: () => showMenu("no-lists") });
   initListView();
+  initEmojiPicker();
 
   // Another tab changed the data: reload so this tab doesn't overwrite it.
   window.addEventListener("storage", (e) => {

@@ -3,6 +3,7 @@
 
 import { loadState, saveState, clearState } from "./storage.js";
 import { randomColor, isPaletteColor } from "./palette.js";
+import { isEmoji } from "./emojis.js";
 import { rememberWord, resetWordbank } from "./wordbank.js";
 
 let state = loadState();
@@ -64,11 +65,12 @@ export function listCategories() {
   return [...set].sort((a, b) => a.localeCompare(b));
 }
 
-export function createList(name, category = "") {
+export function createList(name, category = "", emoji = "") {
   const list = {
     id: uid(),
     name: String(name || "").trim() || "Untitled list",
     color: randomColor(state.lists.map((l) => l.color)),
+    emoji: cleanEmoji(emoji),
     category: String(category || "").trim(),
     favorite: false,
     createdAt: now(),
@@ -86,6 +88,7 @@ export function updateList(id, changes) {
   if ("name" in changes) list.name = String(changes.name).trim() || list.name;
   if ("category" in changes) list.category = String(changes.category || "").trim();
   if ("color" in changes && isPaletteColor(changes.color)) list.color = changes.color;
+  if ("emoji" in changes) list.emoji = cleanEmoji(changes.emoji);
   commit();
   return list;
 }
@@ -125,7 +128,7 @@ export function deleteAll({ clearWordbank = false } = {}) {
 
 // Adding a name already on the list merges into that item: quantities add up
 // and it moves back to "To buy".
-export function addItem(listId, { name, quantity, units, category }) {
+export function addItem(listId, { name, quantity, units, category, emoji }) {
   const list = getList(listId);
   const trimmed = String(name || "").trim();
   if (!list || !trimmed) return null;
@@ -134,6 +137,7 @@ export function addItem(listId, { name, quantity, units, category }) {
     existing.quantity = existing.checked ? normalizeQty(quantity) : existing.quantity + normalizeQty(quantity);
     if (String(units || "").trim()) existing.units = String(units).trim();
     if (String(category || "").trim()) existing.category = String(category).trim();
+    if (isEmoji(emoji)) existing.emoji = emoji;
     existing.checked = false;
     commit();
     rememberWord(existing);
@@ -145,6 +149,7 @@ export function addItem(listId, { name, quantity, units, category }) {
     quantity: normalizeQty(quantity),
     units: String(units || "").trim(),
     category: String(category || "").trim(),
+    emoji: cleanEmoji(emoji),
     checked: false,
   };
   list.items.push(item);
@@ -160,6 +165,7 @@ export function updateItem(listId, itemId, changes) {
   if ("quantity" in changes) item.quantity = normalizeQty(changes.quantity);
   if ("units" in changes) item.units = String(changes.units || "").trim();
   if ("category" in changes) item.category = String(changes.category || "").trim();
+  if ("emoji" in changes) item.emoji = cleanEmoji(changes.emoji);
   commit();
   rememberWord(item);
   return item;
@@ -178,6 +184,11 @@ export function deleteItem(listId, itemId) {
   if (!list) return;
   list.items = list.items.filter((i) => i.id !== itemId);
   commit();
+}
+
+// Anything outside the predefined set clears the emoji.
+function cleanEmoji(emoji) {
+  return isEmoji(emoji) ? emoji : "";
 }
 
 function normalizeQty(q) {

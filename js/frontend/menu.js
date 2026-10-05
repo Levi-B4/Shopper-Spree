@@ -1,20 +1,27 @@
 // Menu view: all lists, sorting, favorites, new list, delete all.
 
 import * as backend from "../backend/lists.js";
+import { toggleEmojiPicker, setEmojiButton } from "./emojiPicker.js";
 import { $, h, svgIcon, ICONS, fillDatalist, confirmDialog } from "./dom.js";
 
 let onOpenList = () => {};
 let categoryFilter = null; // null = all
+let newEmoji = ""; // emoji chosen for the new list
 
 export function initMenu(handlers) {
   onOpenList = handlers.onOpenList;
+
+  const emojiBtn = $("new-list-emoji-btn");
+  emojiBtn.addEventListener("click", () => toggleEmojiPicker(emojiBtn, newEmoji, setNewEmoji));
+  setNewEmoji("");
 
   $("new-list-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const name = $("new-list-name").value.trim();
     if (!name) return;
-    const list = backend.createList(name, $("new-list-category").value);
+    const list = backend.createList(name, $("new-list-category").value, newEmoji);
     e.target.reset();
+    setNewEmoji("");
     onOpenList(list.id);
   });
 
@@ -30,6 +37,11 @@ export function initMenu(handlers) {
       handlers.onAfterDeleteAll();
     });
   });
+}
+
+function setNewEmoji(emoji) {
+  newEmoji = emoji;
+  setEmojiButton($("new-list-emoji-btn"), emoji);
 }
 
 export function renderMenu() {
@@ -120,7 +132,7 @@ function listCard(list) {
       h(
         "span",
         { class: "list-info" },
-        h("span", { class: "list-title" }, list.name),
+        h("span", { class: "list-title" }, list.emoji ? `${list.emoji} ${list.name}` : list.name),
         h(
           "span",
           { class: "list-sub" },

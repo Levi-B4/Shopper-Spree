@@ -1,9 +1,9 @@
 ```
 {
   lists: [{
-    id, name, color, category, favorite: false,
+    id, name, color, emoji, category, favorite: false,
     createdAt, lastOpenedAt,
-    items: [{ id, name, quantity, units, category, checked: false }]
+    items: [{ id, name, quantity, units, category, emoji, checked: false }]
   }],
   settings: { theme: "light" | "dark", sortBy: "recent" | "alpha", lastOpenListId }
 }

@@ -36,6 +36,7 @@
       <form id="new-list-form" class="card new-list" autocomplete="off">
         <h2 class="card-title">New list</h2>
         <div class="row">
+          <button id="new-list-emoji-btn" class="emoji-btn" type="button" aria-label="Choose list emoji" aria-haspopup="true" aria-expanded="false"></button>
           <input id="new-list-name" name="name" type="text" placeholder="List name (e.g. Weekly groceries)" maxlength="60" required />
           <input id="new-list-category" name="category" type="text" placeholder="Category (optional)" maxlength="40" list="list-category-options" />
           <button class="btn primary" type="submit">Create</button>
@@ -71,6 +72,7 @@
           <button id="list-color-btn" class="color-dot lg" type="button" aria-label="Change list color" aria-haspopup="true" aria-expanded="false"></button>
           <div id="palette-popover" class="palette-popover" role="menu" hidden></div>
         </div>
+        <button id="list-emoji-btn" class="emoji-btn lg" type="button" aria-label="Choose list emoji" aria-haspopup="true" aria-expanded="false"></button>
         <div class="list-meta">
           <input id="list-name" class="list-name-input" type="text" maxlength="60" aria-label="List name" />
           <input id="list-category" class="list-category-input" type="text" maxlength="40" placeholder="Add a category" aria-label="List category" list="list-category-options" />
@@ -81,6 +83,10 @@
       </div>
 
       <form id="add-item-form" class="card add-item" autocomplete="off">
+        <div class="field emoji-field">
+          <label for="item-emoji-btn">Emoji</label>
+          <button id="item-emoji-btn" class="emoji-btn" type="button" aria-label="Choose item emoji" aria-haspopup="true" aria-expanded="false"></button>
+        </div>
         <div class="field name-field">
           <label for="item-name">Item</label>
           <input id="item-name" type="text" placeholder="e.g. Milk" maxlength="60" required
@@ -176,6 +182,9 @@
       </div>
     </form>
   </dialog>
+
+  <!-- Shared emoji picker, positioned under whichever emoji button opened it -->
+  <div id="emoji-popover" class="emoji-popover" role="menu" hidden></div>
 
   <noscript><p class="notice">Shopper Spree needs JavaScript enabled.</p></noscript>
 </body>

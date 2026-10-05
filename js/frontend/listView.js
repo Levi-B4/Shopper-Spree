@@ -5,11 +5,13 @@ import * as backend from "../backend/lists.js";
 import { PALETTE } from "../backend/palette.js";
 import { findWord, searchWords, allCategories, allUnits, loadWordbank } from "../backend/wordbank.js";
 import { $, h, svgIcon, ICONS, fillDatalist, formatQty } from "./dom.js";
+import { toggleEmojiPicker, closeEmojiPicker, setEmojiButton } from "./emojiPicker.js";
 
 let currentId = null;
 let acItems = [];
 let acIndex = -1;
 let editingId = null;
+let addEmoji = "";
 
 export const currentListId = () => currentId;
 
@@ -56,6 +58,7 @@ function initHeader() {
 
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
+    closeEmojiPicker();
     pop.hidden ? openPalette() : closePalette();
   });
   document.addEventListener("click", (e) => {
@@ -84,6 +87,14 @@ function initHeader() {
     if (e.key === "Enter") catInput.blur();
   });
 
+  const emojiBtn = $("list-emoji-btn");
+  emojiBtn.addEventListener("click", () => {
+    toggleEmojiPicker(emojiBtn, backend.getList(currentId)?.emoji, (emoji) => {
+      const list = backend.updateList(currentId, { emoji });
+      if (list) renderHeader(list);
+    });
+  });
+
   $("list-fav-btn").addEventListener("click", () => {
     const list = backend.toggleFavorite(currentId);
     if (list) renderHeader(list);
@@ -105,6 +116,7 @@ function closePalette() {
 function renderHeader(list) {
   document.documentElement.style.setProperty("--list-color", list.color);
   $("list-color-btn").style.background = list.color;
+  setEmojiButton($("list-emoji-btn"), list.emoji);
   $("list-name").value = list.name;
   $("list-category").value = list.category || "";
   const fav = $("list-fav-btn");
@@ -159,9 +171,23 @@ function groupByCategory(items) {
 
 function itemRow(item) {
   const qty = `${formatQty(item.quantity)}${item.units ? ` ${item.units}` : ""}`;
+  const emojiBtn = h("button", {
+    class: "emoji-btn item-emoji",
+    type: "button",
+    "aria-label": item.emoji ? `Change emoji for ${item.name}` : `Add emoji to ${item.name}`,
+    "aria-haspopup": "true",
+    "aria-expanded": "false",
+    onclick: () =>
+      toggleEmojiPicker(emojiBtn, item.emoji, (emoji) => {
+        backend.updateItem(currentId, item.id, { emoji });
+        renderItems(backend.getList(currentId));
+      }),
+  });
+  setEmojiButton(emojiBtn, item.emoji);
   return h(
     "li",
     { class: `item${item.checked ? " checked" : ""}` },
+    emojiBtn,
     h(
       "button",
       {
@@ -245,6 +271,9 @@ function openEditDialog(item) {
 // ---------------- add form ----------------
 
 function initAddForm() {
+  const emojiBtn = $("item-emoji-btn");
+  emojiBtn.addEventListener("click", () => toggleEmojiPicker(emojiBtn, addEmoji, setAddEmoji));
+
   $("add-item-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const name = $("item-name").value.trim();
@@ -254,6 +283,7 @@ function initAddForm() {
       quantity: $("item-qty").value,
       units: $("item-units").value,
       category: $("item-category").value,
+      emoji: addEmoji,
     });
     renderItems(backend.getList(currentId));
     refreshDatalists();
@@ -265,7 +295,13 @@ function initAddForm() {
 function resetAddForm() {
   $("add-item-form").reset();
   $("item-qty").value = "1";
+  setAddEmoji("");
   closeAutocomplete();
+}
+
+function setAddEmoji(emoji) {
+  addEmoji = emoji;
+  setEmojiButton($("item-emoji-btn"), emoji);
 }
 
 function refreshDatalists() {
@@ -275,11 +311,10 @@ function refreshDatalists() {
   fillDatalist($("wordbank-options"), loadWordbank().items.map((i) => i.name));
 }
 
-// Fill units + category from the wordbank entry.
+// Fill units + category (and emoji, if remembered) from the wordbank entry.
 function applyWord(word) {
   $("item-name").value = word.name;
-  $("item-units").value = word.units || "";
-  $("item-category").value = word.category || "";
+  applyWordFields(word);
 }
 
 // ---------------- autocomplete ----------------
@@ -318,9 +353,11 @@ function initAutocomplete() {
 }
 
 // Only overwrite units/category when an exact wordbank match is typed.
+// A remembered emoji replaces the current pick; no emoji leaves it alone.
 function applyWordFields(word) {
   $("item-units").value = word.units || "";
   $("item-category").value = word.category || "";
+  if (word.emoji) setAddEmoji(word.emoji);
 }
 
 function choose(word) {
@@ -349,7 +386,7 @@ function renderAutocomplete() {
             choose(word);
           },
         },
-        h("span", { class: "ac-name" }, highlight(word.name, input.value)),
+        h("span", { class: "ac-name" }, word.emoji ? `${word.emoji} ` : null, highlight(word.name, input.value)),
         h("span", { class: "ac-meta" }, [word.category, word.units].filter(Boolean).join(" · "))
       )
     )

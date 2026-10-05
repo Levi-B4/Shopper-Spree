@@ -38,6 +38,7 @@ export const ICONS = {
   x: "M6 6l12 12M18 6L6 18",
   check: "M5 12l5 5L20 7",
   pencil: "M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4",
+  smile: "M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zM8.5 14a4 4 0 0 0 7 0M9 9.5h.01M15 9.5h.01",
 };
 
 export function fillDatalist(datalist, values) {

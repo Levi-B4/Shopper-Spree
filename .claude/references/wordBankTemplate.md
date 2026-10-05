@@ -1,9 +1,9 @@
 ```
 {
     items: [
-        {name, units, category},
-        {name, units, category},
-        {name, units, category}
+        {name, units, category, emoji},
+        {name, units, category, emoji},
+        {name, units, category, emoji}
     ]
 }
 ```
